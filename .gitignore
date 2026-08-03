@@ -1,0 +1,98 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables
+.env
+
+# ===========================
+# VS Code
+# ===========================
+.vscode/
+
+# ===========================
+# Pytest
+# ===========================
+.pytest_cache/
+
+# ===========================
+# Type Checkers
+# ===========================
+.mypy_cache/
+.pyre/
+.pytype/
+
+# ===========================
+# Jupyter
+# ===========================
+.ipynb_checkpoints/
+
+# ===========================
+# Build / Distribution
+# ===========================
+build/
+dist/
+*.egg-info/
+
+# ===========================
+# Logs
+# ===========================
+*.log
+logs/
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+
+# ===========================
+# Temporary Files
+# ===========================
+tmp/
+temp/
+datasets/temp/
+
+# ===========================
+# Local Data
+# ===========================
+datasets/raw/
+datasets/processed/
+datasets/output/
+
+# Keep folder structure
+!datasets/raw/.gitkeep
+!datasets/processed/.gitkeep
+!datasets/output/.gitkeep
+!datasets/temp/.gitkeep
+
+# ===========================
+# Spark
+# ===========================
+spark-warehouse/
+metastore_db/
+
+# ===========================
+# Databricks
+# ===========================
+.databricks/
+
+# ===========================
+# Terraform (Future)
+# ===========================
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# ===========================
+# Docker
+# ===========================
+*.pid
