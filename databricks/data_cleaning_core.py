@@ -1,20 +1,4 @@
-# Databricks notebook source
-# MAGIC %run /fleet-telematics/configure_s3_credentials
 
-# COMMAND ----------
-
-# Databricks notebook source
-"""
-Fleet Telematics — shared cleaning job (single-file version)
- 
-What this notebook does, top to bottom:
-  1. Loads AWS credentials from Databricks secrets (cross-account S3 access,
-     since this cluster isn't in the same AWS account as the S3 bucket)
-  2. Checks S3 to see if this raw file has already been processed
-     (idempotency) — skips if so
-  3. Reads the raw JSONL from S3, cleans it (dedup, filter malformed
-     rows, type-cast), and writes the result back to S3 processed/
-"""
  
 import re
  
@@ -58,9 +42,8 @@ except Exception as e:
 # COMMAND ----------
 
  
-# ============================================================
-# SECTION 2 — Parameters (from Step Functions, or set manually to test)
-# ============================================================
+
+
  
 dbutils.widgets.text("source_key", "")  # e.g. raw/vehicle_telematics_20260804_063344.jsonl
  
@@ -89,9 +72,7 @@ for obj in response.get("Contents", []):
 
 # COMMAND ----------
 
-# ============================================================
-# SECTION 3 — Idempotency check
-# ============================================================
+
  
 existing = s3_client.list_objects_v2(
     Bucket=BUCKET, Prefix=PROCESSED_PREFIX, MaxKeys=1
