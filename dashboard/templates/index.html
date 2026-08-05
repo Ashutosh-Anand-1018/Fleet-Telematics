@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Telematics — Driver Behavior Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0B0E14;
+    --surface: #131720;
+    --surface-2: #1B2130;
+    --border: #262E40;
+    --amber: #FFB020;
+    --cyan: #35D0BA;
+    --red: #FF4D4F;
+    --violet: #A78BFA;
+    --text: #E8EAED;
+    --text-muted: #8B93A7;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-attachment: fixed;
+    background-position: -1px -1px;
+  }
+
+  header {
+    padding: 28px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(11, 14, 20, 0.85);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+
+  .brand-mark {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.15em;
+    border: 1px solid var(--amber);
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+
+  h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  main { padding: 32px 40px 60px; max-width: 1500px; margin: 0 auto; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent, var(--cyan));
+  }
+
+  .kpi-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .kpi-unit { font-size: 15px; color: var(--text-muted); margin-left: 4px; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 32px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .source-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .tag-rds { background: rgba(53, 208, 186, 0.15); color: var(--cyan); }
+  .tag-dynamo { background: rgba(167, 139, 250, 0.15); color: var(--violet); }
+
+  .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-2-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td { padding: 10px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--sans);
+  }
+
+  .badge-eco { background: rgba(53, 208, 186, 0.15); color: var(--cyan); }
+  .badge-normal { background: rgba(255, 176, 32, 0.15); color: var(--amber); }
+  .badge-aggressive { background: rgba(255, 77, 79, 0.15); color: var(--red); }
+
+  .rank-num { font-family: var(--mono); color: var(--text-muted); font-size: 12px; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .empty-state-code { font-family: var(--mono); font-size: 12px; color: var(--amber); margin-top: 8px; }
+
+  canvas { max-height: 260px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-mark">FLEET-TX</span>
+    <div>
+      <h1>Driver Behavior Console</h1>
+      <div class="subtitle">UC-2 — DRIVER BEHAVIOR &amp; FUEL EFFICIENCY</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="kpi-row">
+    <div class="kpi-card" style="--accent: var(--cyan)">
+      <div class="kpi-label">Total Drivers</div>
+      <div class="kpi-value" id="kpi-driver-count">—</div>
+    </div>
+    <div class="kpi-card" style="--accent: var(--amber)">
+      <div class="kpi-label">Avg Safety Score</div>
+      <div class="kpi-value" id="kpi-avg-safety">—</div>
+    </div>
+    <div class="kpi-card" style="--accent: var(--cyan)">
+      <div class="kpi-label">Avg Fuel Efficiency</div>
+      <div class="kpi-value" id="kpi-avg-fuel">—</div>
+    </div>
+    <div class="kpi-card" style="--accent: var(--red)">
+      <div class="kpi-label">Aggressive Events</div>
+      <div class="kpi-value" id="kpi-aggressive">—</div>
+    </div>
+  </div>
+
+  <!-- ============ RDS SECTION ============ -->
+  <div class="section-label">
+    <span class="source-tag tag-rds">RDS</span> Historical Record — DriverPerformance
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">Driver Safety Score — by Device ID</div>
+      <canvas id="chart-driver-scores"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Category Breakdown</div>
+      <canvas id="chart-driver-categories"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">
+      <span>Driver Table (RDS)</span>
+      <span id="drivers-updated" style="font-weight: 400; text-transform: none;"></span>
+    </div>
+    <table id="drivers-table">
+      <thead>
+        <tr>
+          <th>Rank</th><th>Device ID</th><th>Category</th>
+          <th>Safety Score</th><th>Fuel Score</th>
+          <th>Trips</th><th>Aggressive Events</th>
+        </tr>
+      </thead>
+      <tbody id="drivers-tbody"></tbody>
+    </table>
+    <div class="empty-state" id="drivers-empty" style="display:none">
+      No driver data yet in RDS.
+      <div class="empty-state-code">Run driver_behavior_analysis.py → load_driver_data.py, then refresh.</div>
+    </div>
+  </div>
+
+  <!-- ============ DYNAMODB SECTION ============ -->
+  <div class="section-label">
+    <span class="source-tag tag-dynamo">DYNAMODB</span> Operational Lookup — DriverScore
+  </div>
+
+  <div class="grid-2-equal">
+    <div class="panel">
+      <div class="panel-title">Driver Safety Score — by Device ID (DynamoDB)</div>
+      <canvas id="chart-dynamo-scores"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">
+        <span>Driver Table (DynamoDB)</span>
+        <span id="dynamo-updated" style="font-weight: 400; text-transform: none;"></span>
+      </div>
+      <table id="dynamo-table">
+        <thead>
+          <tr><th>Device ID</th><th>Category</th><th>Safety</th><th>Fuel</th></tr>
+        </thead>
+        <tbody id="dynamo-tbody"></tbody>
+      </table>
+      <div class="empty-state" id="dynamo-empty" style="display:none">
+        No driver data yet in DynamoDB.
+        <div class="empty-state-code">Run load_driver_data.py, then refresh.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  Chart.defaults.color = '#8B93A7';
+  Chart.defaults.font.family = 'IBM Plex Mono';
+  Chart.defaults.font.size = 11;
+  Chart.defaults.borderColor = '#262E40';
+
+  // ---- RDS: DriverPerformance ----
+  fetch('/api/drivers')
+    .then(r => r.json())
+    .then(data => {
+      const drivers = (data.drivers || []).sort((a, b) => a.deviceID - b.deviceID);
+      if (drivers.length === 0) {
+        document.getElementById('drivers-empty').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('kpi-driver-count').textContent = drivers.length;
+      const avgSafety = drivers.reduce((s, d) => s + d.driver_safety_score, 0) / drivers.length;
+      const avgFuel = drivers.reduce((s, d) => s + d.fuel_efficiency_score, 0) / drivers.length;
+      const totalAggressive = drivers.reduce((s, d) => s + d.aggressive_event_count, 0);
+      document.getElementById('kpi-avg-safety').innerHTML = avgSafety.toFixed(0) + '<span class="kpi-unit">/100</span>';
+      document.getElementById('kpi-avg-fuel').innerHTML = avgFuel.toFixed(0) + '<span class="kpi-unit">/100</span>';
+      document.getElementById('kpi-aggressive').textContent = totalAggressive;
+      document.getElementById('drivers-updated').textContent = drivers[0].processed_datestamp || '';
+
+      const tbody = document.getElementById('drivers-tbody');
+      drivers.forEach(d => {
+        const badgeClass = d.driver_category === 'Eco Driver' ? 'badge-eco'
+          : d.driver_category === 'Normal Driver' ? 'badge-normal' : 'badge-aggressive';
+        tbody.innerHTML += `<tr>
+          <td class="rank-num">#${d.driver_rank}</td>
+          <td>${d.deviceID}</td>
+          <td><span class="badge ${badgeClass}">${d.driver_category}</span></td>
+          <td>${d.driver_safety_score.toFixed(1)}</td>
+          <td>${d.fuel_efficiency_score.toFixed(1)}</td>
+          <td>${d.total_trips}</td>
+          <td>${d.aggressive_event_count}</td>
+        </tr>`;
+      });
+
+      new Chart(document.getElementById('chart-driver-scores'), {
+        type: 'bar',
+        data: {
+          labels: drivers.map(d => 'Device ' + d.deviceID),
+          datasets: [{
+            data: drivers.map(d => d.driver_safety_score),
+            backgroundColor: drivers.map(d =>
+              d.driver_safety_score >= 80 ? '#35D0BA' : d.driver_safety_score >= 50 ? '#FFB020' : '#FF4D4F'
+            ),
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, max: 100 } }
+        }
+      });
+
+      const categoryCounts = {};
+      drivers.forEach(d => categoryCounts[d.driver_category] = (categoryCounts[d.driver_category] || 0) + 1);
+      new Chart(document.getElementById('chart-driver-categories'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(categoryCounts),
+          datasets: [{
+            data: Object.values(categoryCounts),
+            backgroundColor: ['#35D0BA', '#FFB020', '#FF4D4F'],
+            borderColor: '#131720',
+            borderWidth: 3,
+          }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+    })
+    .catch(() => document.getElementById('drivers-empty').style.display = 'block');
+
+  // ---- DynamoDB: DriverScore ----
+  fetch('/api/drivers-dynamo')
+    .then(r => r.json())
+    .then(data => {
+      const drivers = (data.drivers || []).sort((a, b) => a.deviceID - b.deviceID);
+      if (drivers.length === 0) {
+        document.getElementById('dynamo-empty').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('dynamo-updated').textContent = drivers[0].processed_datestamp || '';
+
+      const tbody = document.getElementById('dynamo-tbody');
+      drivers.forEach(d => {
+        const badgeClass = d.driver_category === 'Eco Driver' ? 'badge-eco'
+          : d.driver_category === 'Normal Driver' ? 'badge-normal' : 'badge-aggressive';
+        tbody.innerHTML += `<tr>
+          <td>${d.deviceID}</td>
+          <td><span class="badge ${badgeClass}">${d.driver_category}</span></td>
+          <td>${Number(d.driver_safety_score).toFixed(1)}</td>
+          <td>${Number(d.fuel_efficiency_score).toFixed(1)}</td>
+        </tr>`;
+      });
+
+      new Chart(document.getElementById('chart-dynamo-scores'), {
+        type: 'bar',
+        data: {
+          labels: drivers.map(d => 'Device ' + d.deviceID),
+          datasets: [{
+            data: drivers.map(d => d.driver_safety_score),
+            backgroundColor: drivers.map(d =>
+              d.driver_safety_score >= 80 ? '#35D0BA' : d.driver_safety_score >= 50 ? '#FFB020' : '#FF4D4F'
+            ),
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, max: 100 } }
+        }
+      });
+    })
+    .catch(() => document.getElementById('dynamo-empty').style.display = 'block');
+</script>
+
+</body>
+</html>
