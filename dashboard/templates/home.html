@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fleet Telematics Dashboard</title>
+
+    <style>
+
+        body{
+            font-family:Arial;
+            background:#0b0e14;
+            color:white;
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            height:100vh;
+        }
+
+        .container{
+
+            display:flex;
+            gap:50px;
+
+        }
+
+        .card{
+
+            width:350px;
+            padding:30px;
+
+            background:#1b2130;
+            border-radius:12px;
+
+            text-align:center;
+
+        }
+
+        button{
+
+            margin-top:20px;
+
+            padding:12px 25px;
+
+            border:none;
+
+            border-radius:8px;
+
+            cursor:pointer;
+
+            font-size:16px;
+
+        }
+
+        .driver{
+            background:#35D0BA;
+        }
+
+        .vehicle{
+            background:#FFB020;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>Driver Behaviour Dashboard</h2>
+
+        <p>
+            Driver safety, fuel efficiency,
+            driver ranking,
+            DynamoDB lookup
+        </p>
+
+        <a href="/driver-stats">
+
+            <button class="driver">
+
+                Open Dashboard
+
+            </button>
+
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Vehicle Health Dashboard</h2>
+
+        <p>
+
+            Engine health,
+            battery,
+            maintenance,
+            alerts
+
+        </p>
+
+        <a href="/vehicle-stats">
+
+            <button class="vehicle">
+
+                Open Dashboard
+
+            </button>
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

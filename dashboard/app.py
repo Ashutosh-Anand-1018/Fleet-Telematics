@@ -1,15 +1,20 @@
 """
 FastAPI backend for the Fleet Telematics dashboard.
 
-Serves two API endpoints reading directly from RDS:
-    GET /api/drivers   -> DriverPerformance (UC-2)
-    GET /api/vehicles  -> VehicleHealthReport (UC-1)
+Routes:
+    GET /                     -> Home page
+    GET /driver-stats         -> Driver Dashboard
+    GET /vehicle-stats        -> Vehicle Dashboard
 
-And the dashboard page itself at GET /.
+APIs:
+    GET /api/drivers
+    GET /api/drivers-dynamo
+    GET /api/vehicles
+    GET /api/vehicles-dynamo
+    GET /api/health
 
 Run:
     uvicorn dashboard.app:app --reload --port 8000
-Then open http://localhost:8000
 """
 
 import os
@@ -20,34 +25,45 @@ import pymysql
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
+from fastapi.templating import Jinja2Templates
 
 load_dotenv()
 
+
 RDS_HOST = os.getenv("RDS_HOST")
 RDS_USER = os.getenv("RDS_USER", "admin")
-RDS_PASSWORD = os.getenv("RDS_PASSWORD")
+RDS_PASSWORD = os.getenv("RDS_PASSWORD","")
 RDS_DATABASE = os.getenv("RDS_DATABASE", "fleet_telematics_eng2")
 
 AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")
-DYNAMO_TABLE_NAME = "DriverScore"
+
+# DynamoDB Tables
+DRIVER_DYNAMO_TABLE = "DriverScore"
+VEHICLE_DYNAMO_TABLE = "VehicleAlerts"
 
 app = FastAPI(title="Fleet Telematics Dashboard")
+
 templates = Jinja2Templates(directory="dashboard/templates")
 
-dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
+dynamodb = boto3.resource(
+    "dynamodb",
+    region_name=AWS_REGION
+)
 
 
 def decimal_to_native(obj):
-    """Recursively converts DynamoDB's Decimal types to plain
-    int/float so FastAPI's JSON encoder can serialize them."""
+    """Convert DynamoDB Decimal values into Python int/float."""
+
     if isinstance(obj, list):
         return [decimal_to_native(v) for v in obj]
+
     if isinstance(obj, dict):
         return {k: decimal_to_native(v) for k, v in obj.items()}
+
     if isinstance(obj, Decimal):
         return int(obj) if obj % 1 == 0 else float(obj)
+
     return obj
 
 
@@ -63,38 +79,123 @@ def get_connection():
 
 
 @app.get("/", response_class=HTMLResponse)
-def dashboard(request: Request):
-    return templates.TemplateResponse(request, "index.html")
+def home(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "home.html"
+    )
+
+
+@app.get("/driver-stats", response_class=HTMLResponse)
+def driver_dashboard(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "driver_dashboard.html"
+    )
+
+
+@app.get("/vehicle-stats", response_class=HTMLResponse)
+def vehicle_dashboard(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "vehicle_dashboard.html"
+    )
 
 
 @app.get("/api/drivers")
 def get_drivers():
+
     conn = get_connection()
+
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM DriverPerformance ORDER BY deviceID ASC")
+
+            cursor.execute("""
+                SELECT *
+                FROM DriverPerformance
+                ORDER BY deviceID ASC
+            """)
+
             rows = cursor.fetchall()
+
     finally:
         conn.close()
+
     return {"drivers": rows}
 
 
 @app.get("/api/drivers-dynamo")
 def get_drivers_dynamo():
-    table = dynamodb.Table(DYNAMO_TABLE_NAME)
+
+    table = dynamodb.Table(DRIVER_DYNAMO_TABLE) # type: ignore
+
     response = table.scan()
+
     items = response.get("Items", [])
+
     items = decimal_to_native(items)
-    items.sort(key=lambda d: int(d["deviceID"]))
+
+    items.sort(key=lambda d: int(d["deviceID"])) # type: ignore
+
     return {"drivers": items}
+
+
+
+@app.get("/api/vehicles")
+def get_vehicles():
+
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cursor:
+
+            cursor.execute("""
+                SELECT *
+                FROM VehicleHealthReport
+                ORDER BY deviceID ASC
+            """)
+
+            rows = cursor.fetchall()
+
+    finally:
+        conn.close()
+
+    return {"vehicles": rows}
+
+
+@app.get("/api/vehicles-dynamo")
+def get_vehicles_dynamo():
+
+    table = dynamodb.Table(VEHICLE_DYNAMO_TABLE) # type: ignore
+
+    response = table.scan()
+
+    items = response.get("Items", [])
+
+    items = decimal_to_native(items)
+
+    items.sort(key=lambda d: int(d["deviceID"])) #type: ignore
+
+    return {"vehicles": items}
 
 
 @app.get("/api/health")
 def health_check():
-    """Quick check that the API itself and the RDS connection both work."""
+
     try:
+
         conn = get_connection()
+
         conn.close()
-        return {"status": "ok", "rds": "connected"}
+
+        return {
+            "status": "ok",
+            "rds": "connected"
+        }
+
     except Exception as e:
-        return {"status": "error", "detail": str(e)}
+
+        return {
+            "status": "error",
+            "detail": str(e)
+        }
