@@ -163,7 +163,7 @@ Live operations console built with FastAPI + Chart.js — dual-source view compa
 <tr>
 <td align="center" width="50%">
 <b>Driver Behavior — RDS View</b><br><br>
-<!-- <img src="dashboard/screenshots/driver-rds.png" width="100%"> -->
+<img src="dashboard/screenshots/driver-rds.png" width="100%">
 <i>📸 Screenshot placeholder — <code>dashboard/screenshots/driver-rds.png</code></i>
 </td>
 <td align="center" width="50%">
