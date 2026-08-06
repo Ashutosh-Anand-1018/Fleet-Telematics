@@ -193,7 +193,9 @@
     font-family: var(--sans);
   }
 
+  /* Badge Styles for Risk Categories */
   .badge-safe { background: rgba(53, 208, 186, 0.15); color: var(--cyan); }
+  .badge-warning { background: rgba(255, 176, 32, 0.15); color: var(--amber); }
   .badge-danger { background: rgba(255, 77, 79, 0.15); color: var(--red); }
   
   .rank-num { font-family: var(--mono); color: var(--text-muted); font-size: 12px; }
@@ -247,7 +249,7 @@
       <canvas id="chart-vehicle-scores"></canvas>
     </div>
     <div class="panel">
-      <div class="panel-title">Risk Distribution</div>
+      <div class="panel-title">Risk Category Distribution</div>
       <canvas id="chart-vehicle-risk"></canvas>
     </div>
   </div>
@@ -308,8 +310,17 @@
   Chart.defaults.font.size = 11;
   Chart.defaults.borderColor = '#262E40';
 
-  // ---- Helper func to check truthy high risk values from DB ----
-  const isHighRisk = (val) => val === true || val === 1 || val === "True" || val === "true";
+  // Helper function to evaluate risk tier directly from health score
+  function getRiskTier(score) {
+    const numScore = Number(score);
+    if (numScore < 60) {
+      return { text: 'High Risk', badgeClass: 'badge-danger' };
+    } else if (numScore < 80) {
+      return { text: 'Moderate Risk', badgeClass: 'badge-warning' };
+    } else {
+      return { text: 'Normal', badgeClass: 'badge-safe' };
+    }
+  }
 
   // ---- RDS: VehicleHealthReport ----
   fetch('/api/vehicles')
@@ -322,9 +333,20 @@
       }
 
       document.getElementById('kpi-vehicle-count').textContent = vehicles.length;
-      const avgHealth = vehicles.reduce((s, v) => s + v.vehicle_health_score, 0) / vehicles.length;
-      const totalAlerts = vehicles.reduce((s, v) => s + v.total_alert_count, 0);
-      const highRiskCount = vehicles.filter(v => isHighRisk(v.is_high_risk)).length;
+      const avgHealth = vehicles.reduce((s, v) => s + Number(v.vehicle_health_score), 0) / vehicles.length;
+      const totalAlerts = vehicles.reduce((s, v) => s + Number(v.total_alert_count), 0);
+      
+      // Categorize counts
+      let highRiskCount = 0;
+      let moderateRiskCount = 0;
+      let normalCount = 0;
+
+      vehicles.forEach(v => {
+        const score = Number(v.vehicle_health_score);
+        if (score < 60) highRiskCount++;
+        else if (score < 80) moderateRiskCount++;
+        else normalCount++;
+      });
       
       document.getElementById('kpi-avg-health').innerHTML = avgHealth.toFixed(1) + '<span class="kpi-unit">/100</span>';
       document.getElementById('kpi-alerts').textContent = totalAlerts;
@@ -333,14 +355,12 @@
 
       const tbody = document.getElementById('vehicles-tbody');
       vehicles.forEach(v => {
-        const risk = isHighRisk(v.is_high_risk);
-        const badgeClass = risk ? 'badge-danger' : 'badge-safe';
-        const riskText = risk ? 'High Risk' : 'Normal';
+        const risk = getRiskTier(v.vehicle_health_score);
         
         tbody.innerHTML += `<tr>
           <td class="rank-num">#${v.risk_rank || '-'}</td>
           <td>${v.deviceID}</td>
-          <td><span class="badge ${badgeClass}">${riskText}</span></td>
+          <td><span class="badge ${risk.badgeClass}">${risk.text}</span></td>
           <td>${Number(v.vehicle_health_score).toFixed(1)}</td>
           <td>${v.total_alert_count}</td>
           <td style="font-size: 11px; color: var(--text-muted);">${v.maintenance_recommendation || 'N/A'}</td>
@@ -354,7 +374,7 @@
           datasets: [{
             data: vehicles.map(v => v.vehicle_health_score),
             backgroundColor: vehicles.map(v =>
-              v.vehicle_health_score >= 80 ? '#35D0BA' : v.vehicle_health_score >= 50 ? '#FFB020' : '#FF4D4F'
+              v.vehicle_health_score >= 80 ? '#35D0BA' : v.vehicle_health_score >= 60 ? '#FFB020' : '#FF4D4F'
             ),
             borderRadius: 4,
           }]
@@ -365,14 +385,14 @@
         }
       });
 
-      const safeCount = vehicles.length - highRiskCount;
+      // Updated Doughnut chart supporting 3 tiers
       new Chart(document.getElementById('chart-vehicle-risk'), {
         type: 'doughnut',
         data: {
-          labels: ['Normal', 'High Risk'],
+          labels: ['Normal', 'Moderate Risk', 'High Risk'],
           datasets: [{
-            data: [safeCount, highRiskCount],
-            backgroundColor: ['#35D0BA', '#FF4D4F'],
+            data: [normalCount, moderateRiskCount, highRiskCount],
+            backgroundColor: ['#35D0BA', '#FFB020', '#FF4D4F'],
             borderColor: '#131720',
             borderWidth: 3,
           }]
@@ -396,13 +416,11 @@
 
       const tbody = document.getElementById('dynamo-tbody');
       vehicles.forEach(v => {
-        const risk = isHighRisk(v.is_high_risk);
-        const badgeClass = risk ? 'badge-danger' : 'badge-safe';
-        const riskText = risk ? 'High Risk' : 'Normal';
+        const risk = getRiskTier(v.vehicle_health_score);
         
         tbody.innerHTML += `<tr>
           <td>${v.deviceID}</td>
-          <td><span class="badge ${badgeClass}">${riskText}</span></td>
+          <td><span class="badge ${risk.badgeClass}">${risk.text}</span></td>
           <td>${Number(v.vehicle_health_score).toFixed(1)}</td>
           <td>${v.total_alert_count}</td>
         </tr>`;
@@ -415,7 +433,7 @@
           datasets: [{
             data: vehicles.map(v => v.vehicle_health_score),
             backgroundColor: vehicles.map(v =>
-              v.vehicle_health_score >= 80 ? '#35D0BA' : v.vehicle_health_score >= 50 ? '#FFB020' : '#FF4D4F'
+              v.vehicle_health_score >= 80 ? '#35D0BA' : v.vehicle_health_score >= 60 ? '#FFB020' : '#FF4D4F'
             ),
             borderRadius: 4,
           }]
