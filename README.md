@@ -168,7 +168,7 @@ Live operations console built with FastAPI + Chart.js — dual-source view compa
 </td>
 <td align="center" width="50%">
 <b>Driver Behavior — DynamoDB Comparison</b><br><br>
-<!-- <img src="dashboard/screenshots/driver-dynamo.png" width="100%"> -->
+<img src="dashboard/screenshots/driver-dynamo.png" width="100%">
 <i>📸 Screenshot placeholder — <code>dashboard/screenshots/driver-dynamo.png</code></i>
 </td>
 </tr>
