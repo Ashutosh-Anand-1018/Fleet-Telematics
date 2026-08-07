@@ -14,6 +14,7 @@
     --surface-2: #1B2130;
     --border: #262E40;
     --amber: #FFB020;
+    --green: #22C55E;
     --cyan: #35D0BA;
     --red: #FF4D4F;
     --violet: #A78BFA;
@@ -184,6 +185,12 @@
   td { padding: 10px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
   tr:last-child td { border-bottom: none; }
 
+  #vehicles-tbody tr {
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  #vehicles-tbody tr:hover { background: var(--surface-2); }
+
   .badge {
     display: inline-block;
     padding: 3px 9px;
@@ -193,17 +200,155 @@
     font-family: var(--sans);
   }
 
-  /* Badge Styles for Risk Categories */
-  .badge-safe { background: rgba(53, 208, 186, 0.15); color: var(--cyan); }
+  .badge-safe { background: rgba(34, 197, 94, 0.15); color: var(--green); }
   .badge-warning { background: rgba(255, 176, 32, 0.15); color: var(--amber); }
   .badge-danger { background: rgba(255, 77, 79, 0.15); color: var(--red); }
-  
+
   .rank-num { font-family: var(--mono); color: var(--text-muted); font-size: 12px; }
 
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
   .empty-state-code { font-family: var(--mono); font-size: 12px; color: var(--amber); margin-top: 8px; }
 
   canvas { max-height: 260px; }
+
+  /* ---- Modal ---- */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .modal-device {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .modal-close {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-score-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .modal-score-card {
+    flex: 1;
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .modal-score-value {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .modal-score-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  .modal-explanation {
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent, var(--amber));
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .modal-recommendation {
+    background: rgba(255, 176, 32, 0.08);
+    border: 1px solid rgba(255, 176, 32, 0.25);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .modal-recommendation-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .modal-breakdown-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .modal-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .modal-breakdown-row:last-child { border-bottom: none; }
+
+  .modal-breakdown-count {
+    font-family: var(--mono);
+    font-weight: 600;
+  }
 </style>
 </head>
 <body>
@@ -213,7 +358,7 @@
     <span class="brand-mark">FLEET-TX</span>
     <div>
       <h1>Vehicle Health Console</h1>
-      <div class="subtitle">UC-3 — VEHICLE ALERTING &amp; MAINTENANCE</div>
+      <div class="subtitle">UC-1 — VEHICLE HEALTH &amp; PREDICTIVE MAINTENANCE</div>
     </div>
   </div>
 </header>
@@ -256,13 +401,13 @@
 
   <div class="panel">
     <div class="panel-title">
-      <span>Vehicle Table (RDS)</span>
+      <span>Vehicle Table (RDS) — click a row for details</span>
       <span id="vehicles-updated" style="font-weight: 400; text-transform: none;"></span>
     </div>
     <table id="vehicles-table">
       <thead>
         <tr>
-          <th>Risk Rank</th><th>Device ID</th><th>Status</th>
+          <th>Device ID</th>
           <th>Health Score</th><th>Total Alerts</th>
           <th>Maintenance Recommendation</th>
         </tr>
@@ -271,7 +416,7 @@
     </table>
     <div class="empty-state" id="vehicles-empty" style="display:none">
       No vehicle data yet in RDS.
-      <div class="empty-state-code">Run vehicle_telematics_pipeline.py → load_vehicle_data.py, then refresh.</div>
+      <div class="empty-state-code">Run vehicle_health_analysis.py → load_vehicle_health_data.py, then refresh.</div>
     </div>
   </div>
 
@@ -292,17 +437,55 @@
       </div>
       <table id="dynamo-table">
         <thead>
-          <tr><th>Device ID</th><th>Status</th><th>Health</th><th>Alerts</th></tr>
+          <tr><th>Device ID</th><th>Health</th><th>Alerts</th></tr>
         </thead>
         <tbody id="dynamo-tbody"></tbody>
       </table>
       <div class="empty-state" id="dynamo-empty" style="display:none">
         No vehicle data yet in DynamoDB.
-        <div class="empty-state-code">Run load_vehicle_data.py, then refresh.</div>
+        <div class="empty-state-code">Run load_vehicle_health_data.py, then refresh.</div>
       </div>
     </div>
   </div>
 </main>
+
+<!-- ============ EXPLANATION MODAL ============ -->
+<div class="modal-overlay" id="vehicle-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Vehicle Detail</div>
+        <div class="modal-device" id="modal-device-title">—</div>
+      </div>
+      <button class="modal-close" id="modal-close-btn">✕</button>
+    </div>
+
+    <div class="modal-score-row">
+      <div class="modal-score-card">
+        <div class="modal-score-value" id="modal-health-score" style="color: var(--cyan)">—</div>
+        <div class="modal-score-label">Health Score</div>
+      </div>
+      <div class="modal-score-card">
+        <div class="modal-score-value" id="modal-alert-count">—</div>
+        <div class="modal-score-label">Total Alerts</div>
+      </div>
+      <div class="modal-score-card">
+        <div class="modal-score-value" id="modal-rank">—</div>
+        <div class="modal-score-label">Risk Rank</div>
+      </div>
+    </div>
+
+    <div class="modal-explanation" id="modal-explanation-text">—</div>
+
+    <div class="modal-recommendation">
+      <div class="modal-recommendation-label">🔧 Maintenance Recommendation</div>
+      <div id="modal-recommendation-text">—</div>
+    </div>
+
+    <div class="modal-breakdown-title">Alert Breakdown</div>
+    <div id="modal-breakdown"></div>
+  </div>
+</div>
 
 <script>
   Chart.defaults.color = '#8B93A7';
@@ -310,17 +493,72 @@
   Chart.defaults.font.size = 11;
   Chart.defaults.borderColor = '#262E40';
 
-  // Helper function to evaluate risk tier directly from health score
+  // Unified risk-tier colors, matching the driver dashboard's scheme
+  // (green = safe, amber = caution, red = danger) for project-wide consistency
   function getRiskTier(score) {
     const numScore = Number(score);
-    if (numScore < 60) {
-      return { text: 'High Risk', badgeClass: 'badge-danger' };
-    } else if (numScore < 80) {
-      return { text: 'Moderate Risk', badgeClass: 'badge-warning' };
+    if (numScore < 60) return { text: 'High Risk', badgeClass: 'badge-danger', color: '#FF4D4F' };
+    if (numScore < 80) return { text: 'Moderate Risk', badgeClass: 'badge-warning', color: '#FFB020' };
+    return { text: 'Normal', badgeClass: 'badge-safe', color: '#22C55E' };
+  }
+
+  function buildVehicleExplanation(v) {
+    const risk = getRiskTier(v.vehicle_health_score);
+    const counts = {
+      'high RPM': v.high_rpm_count || 0,
+      'overheating': v.overheating_count || 0,
+      'excessive engine load': v.excessive_load_count || 0,
+      'low battery voltage': v.low_battery_count || 0,
+      'diagnostic trouble codes': v.dtc_count || 0,
+    };
+    const topIssue = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    const totalReadings = v.total_readings || 0;
+    const rate = totalReadings > 0 ? ((v.total_alert_count / totalReadings) * 100).toFixed(3) : '0';
+
+    if (risk.text === 'High Risk') {
+      return `Device ${v.deviceID} is flagged <b>High Risk</b> because it accumulated ${v.total_alert_count} health alerts across ${totalReadings.toLocaleString()} readings (${rate}% alert rate) — most frequently <b>${topIssue[0]}</b> (${topIssue[1]} occurrences). This is a relative ranking within the current fleet, based on alert frequency per reading.`;
+    } else if (risk.text === 'Moderate Risk') {
+      return `Device ${v.deviceID} shows <b>Moderate Risk</b> — ${v.total_alert_count} alerts across ${totalReadings.toLocaleString()} readings (${rate}%), with ${topIssue[0]} being the most common signal (${topIssue[1]} occurrences). Worth monitoring, not yet urgent.`;
     } else {
-      return { text: 'Normal', badgeClass: 'badge-safe' };
+      return `Device ${v.deviceID} is operating <b>Normally</b> — only ${v.total_alert_count} alerts across ${totalReadings.toLocaleString()} readings (${rate}%), well within expected range for this fleet.`;
     }
   }
+
+  function openVehicleModal(v) {
+    const risk = getRiskTier(v.vehicle_health_score);
+    document.getElementById('modal-device-title').textContent = 'Device ' + v.deviceID;
+    document.getElementById('modal-health-score').textContent = Number(v.vehicle_health_score).toFixed(1);
+    document.getElementById('modal-health-score').style.color = risk.color;
+    document.getElementById('modal-alert-count').textContent = v.total_alert_count;
+    document.getElementById('modal-rank').textContent = v.risk_rank ? '#' + v.risk_rank : '—';
+    document.getElementById('modal-explanation-text').innerHTML = buildVehicleExplanation(v);
+    document.querySelector('.modal-explanation').style.setProperty('--accent', risk.color);
+    document.getElementById('modal-recommendation-text').textContent = v.maintenance_recommendation || 'No recommendation available';
+
+    const breakdown = document.getElementById('modal-breakdown');
+    breakdown.innerHTML = `
+      <div class="modal-breakdown-row"><span>High RPM events (rpm &gt; 2000)</span><span class="modal-breakdown-count">${v.high_rpm_count || 0}</span></div>
+      <div class="modal-breakdown-row"><span>Overheating events (cTemp &gt; 91°C)</span><span class="modal-breakdown-count">${v.overheating_count || 0}</span></div>
+      <div class="modal-breakdown-row"><span>Excessive load events (eLoad &gt; 81)</span><span class="modal-breakdown-count">${v.excessive_load_count || 0}</span></div>
+      <div class="modal-breakdown-row"><span>Low battery events (&lt; 12.0V)</span><span class="modal-breakdown-count">${v.low_battery_count || 0}</span></div>
+      <div class="modal-breakdown-row"><span>DTC events</span><span class="modal-breakdown-count">${v.dtc_count || 0}</span></div>
+      <div class="modal-breakdown-row"><span>Total trips</span><span class="modal-breakdown-count">${v.total_trips || '—'}</span></div>
+      <div class="modal-breakdown-row"><span>Total readings</span><span class="modal-breakdown-count">${(v.total_readings || 0).toLocaleString()}</span></div>
+      <div class="modal-breakdown-row"><span>Avg coolant temp</span><span class="modal-breakdown-count">${v.avg_cTemp ? Number(v.avg_cTemp).toFixed(1) + '°C' : '—'}</span></div>
+      <div class="modal-breakdown-row"><span>Avg engine load</span><span class="modal-breakdown-count">${v.avg_eLoad ? Number(v.avg_eLoad).toFixed(1) : '—'}</span></div>
+    `;
+
+    document.getElementById('vehicle-modal').classList.add('active');
+  }
+
+  document.getElementById('modal-close-btn').addEventListener('click', () => {
+    document.getElementById('vehicle-modal').classList.remove('active');
+  });
+  document.getElementById('vehicle-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'vehicle-modal') {
+      document.getElementById('vehicle-modal').classList.remove('active');
+    }
+  });
 
   // ---- RDS: VehicleHealthReport ----
   fetch('/api/vehicles')
@@ -335,19 +573,15 @@
       document.getElementById('kpi-vehicle-count').textContent = vehicles.length;
       const avgHealth = vehicles.reduce((s, v) => s + Number(v.vehicle_health_score), 0) / vehicles.length;
       const totalAlerts = vehicles.reduce((s, v) => s + Number(v.total_alert_count), 0);
-      
-      // Categorize counts
-      let highRiskCount = 0;
-      let moderateRiskCount = 0;
-      let normalCount = 0;
 
+      let highRiskCount = 0, moderateRiskCount = 0, normalCount = 0;
       vehicles.forEach(v => {
-        const score = Number(v.vehicle_health_score);
-        if (score < 60) highRiskCount++;
-        else if (score < 80) moderateRiskCount++;
+        const tier = getRiskTier(v.vehicle_health_score).text;
+        if (tier === 'High Risk') highRiskCount++;
+        else if (tier === 'Moderate Risk') moderateRiskCount++;
         else normalCount++;
       });
-      
+
       document.getElementById('kpi-avg-health').innerHTML = avgHealth.toFixed(1) + '<span class="kpi-unit">/100</span>';
       document.getElementById('kpi-alerts').textContent = totalAlerts;
       document.getElementById('kpi-high-risk').textContent = highRiskCount;
@@ -355,16 +589,15 @@
 
       const tbody = document.getElementById('vehicles-tbody');
       vehicles.forEach(v => {
-        const risk = getRiskTier(v.vehicle_health_score);
-        
-        tbody.innerHTML += `<tr>
-          <td class="rank-num">#${v.risk_rank || '-'}</td>
+        const row = document.createElement('tr');
+        row.innerHTML = `
           <td>${v.deviceID}</td>
-          <td><span class="badge ${risk.badgeClass}">${risk.text}</span></td>
           <td>${Number(v.vehicle_health_score).toFixed(1)}</td>
           <td>${v.total_alert_count}</td>
           <td style="font-size: 11px; color: var(--text-muted);">${v.maintenance_recommendation || 'N/A'}</td>
-        </tr>`;
+        `;
+        row.addEventListener('click', () => openVehicleModal(v));
+        tbody.appendChild(row);
       });
 
       new Chart(document.getElementById('chart-vehicle-scores'), {
@@ -373,26 +606,26 @@
           labels: vehicles.map(v => 'Device ' + v.deviceID),
           datasets: [{
             data: vehicles.map(v => v.vehicle_health_score),
-            backgroundColor: vehicles.map(v =>
-              v.vehicle_health_score >= 80 ? '#35D0BA' : v.vehicle_health_score >= 60 ? '#FFB020' : '#FF4D4F'
-            ),
+            backgroundColor: vehicles.map(v => getRiskTier(v.vehicle_health_score).color),
             borderRadius: 4,
           }]
         },
         options: {
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, max: 100 } }
+          scales: { y: { beginAtZero: true, max: 100 } },
+          onClick: (evt, elements) => {
+            if (elements.length > 0) openVehicleModal(vehicles[elements[0].index]);
+          }
         }
       });
 
-      // Updated Doughnut chart supporting 3 tiers
       new Chart(document.getElementById('chart-vehicle-risk'), {
         type: 'doughnut',
         data: {
           labels: ['Normal', 'Moderate Risk', 'High Risk'],
           datasets: [{
             data: [normalCount, moderateRiskCount, highRiskCount],
-            backgroundColor: ['#35D0BA', '#FFB020', '#FF4D4F'],
+            backgroundColor: ['#22C55E', '#FFB020', '#FF4D4F'],
             borderColor: '#131720',
             borderWidth: 3,
           }]
@@ -416,11 +649,8 @@
 
       const tbody = document.getElementById('dynamo-tbody');
       vehicles.forEach(v => {
-        const risk = getRiskTier(v.vehicle_health_score);
-        
         tbody.innerHTML += `<tr>
           <td>${v.deviceID}</td>
-          <td><span class="badge ${risk.badgeClass}">${risk.text}</span></td>
           <td>${Number(v.vehicle_health_score).toFixed(1)}</td>
           <td>${v.total_alert_count}</td>
         </tr>`;
@@ -432,9 +662,7 @@
           labels: vehicles.map(v => 'Device ' + v.deviceID),
           datasets: [{
             data: vehicles.map(v => v.vehicle_health_score),
-            backgroundColor: vehicles.map(v =>
-              v.vehicle_health_score >= 80 ? '#35D0BA' : v.vehicle_health_score >= 60 ? '#FFB020' : '#FF4D4F'
-            ),
+            backgroundColor: vehicles.map(v => getRiskTier(v.vehicle_health_score).color),
             borderRadius: 4,
           }]
         },

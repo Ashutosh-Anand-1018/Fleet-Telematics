@@ -17,20 +17,17 @@
       --surface-2: #1B2130;
       --border: #262E40;
       --amber: #FFB020;
-      --cyan: #35D0BA;
+      --green: #22C55E;
       --red: #FF4D4F;
       --violet: #A78BFA;
+      --cyan: #35D0BA;
       --text: #E8EAED;
       --text-muted: #8B93A7;
       --mono: 'IBM Plex Mono', monospace;
       --sans: 'Inter', sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg);
@@ -58,11 +55,7 @@
       z-index: 10;
     }
 
-    .brand {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: baseline; gap: 12px; }
 
     .brand-mark {
       font-family: var(--mono);
@@ -74,11 +67,7 @@
       border-radius: 3px;
     }
 
-    h1 {
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
+    h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
 
     .subtitle {
       font-family: var(--mono);
@@ -87,11 +76,7 @@
       letter-spacing: 0.05em;
     }
 
-    main {
-      padding: 32px 40px 60px;
-      max-width: 1500px;
-      margin: 0 auto;
-    }
+    main { padding: 32px 40px 60px; max-width: 1500px; margin: 0 auto; }
 
     .kpi-row {
       display: grid;
@@ -112,10 +97,8 @@
     .kpi-card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
       background: var(--accent, var(--cyan));
     }
 
@@ -136,11 +119,7 @@
       line-height: 1;
     }
 
-    .kpi-unit {
-      font-size: 15px;
-      color: var(--text-muted);
-      margin-left: 4px;
-    }
+    .kpi-unit { font-size: 15px; color: var(--text-muted); margin-left: 4px; }
 
     .section-label {
       font-family: var(--mono);
@@ -154,12 +133,7 @@
       gap: 10px;
     }
 
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     .source-tag {
       font-family: var(--mono);
@@ -169,29 +143,11 @@
       letter-spacing: 0.05em;
     }
 
-    .tag-rds {
-      background: rgba(53, 208, 186, 0.15);
-      color: var(--cyan);
-    }
+    .tag-rds { background: rgba(53, 208, 186, 0.15); color: var(--cyan); }
+    .tag-dynamo { background: rgba(167, 139, 250, 0.15); color: var(--violet); }
 
-    .tag-dynamo {
-      background: rgba(167, 139, 250, 0.15);
-      color: var(--violet);
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .grid-2-equal {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
+    .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid-2-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 
     .panel {
       background: var(--surface);
@@ -212,11 +168,7 @@
       align-items: center;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
     th {
       text-align: left;
@@ -229,15 +181,14 @@
       border-bottom: 1px solid var(--border);
     }
 
-    td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      font-family: var(--mono);
-    }
+    td { padding: 10px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+    tr:last-child td { border-bottom: none; }
 
-    tr:last-child td {
-      border-bottom: none;
+    #drivers-tbody tr {
+      cursor: pointer;
+      transition: background 0.12s ease;
     }
+    #drivers-tbody tr:hover { background: var(--surface-2); }
 
     .badge {
       display: inline-block;
@@ -248,42 +199,136 @@
       font-family: var(--sans);
     }
 
-    .badge-eco {
-      background: rgba(53, 208, 186, 0.15);
-      color: var(--cyan);
+    .badge-eco { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .badge-normal { background: rgba(255, 176, 32, 0.15); color: var(--amber); }
+    .badge-aggressive { background: rgba(255, 77, 79, 0.15); color: var(--red); }
+
+    .rank-num { font-family: var(--mono); color: var(--text-muted); font-size: 12px; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-state-code { font-family: var(--mono); font-size: 12px; color: var(--amber); margin-top: 8px; }
+
+    canvas { max-height: 260px; }
+
+    /* ---- Modal ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
     }
 
-    .badge-normal {
-      background: rgba(255, 176, 32, 0.15);
-      color: var(--amber);
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 18px;
     }
 
-    .badge-aggressive {
-      background: rgba(255, 77, 79, 0.15);
-      color: var(--red);
-    }
-
-    .rank-num {
+    .modal-title {
       font-family: var(--mono);
-      color: var(--text-muted);
       font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
     }
 
-    .empty-state {
+    .modal-device {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .modal-close {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-score-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .modal-score-card {
+      flex: 1;
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 14px;
       text-align: center;
-      padding: 40px 20px;
-      color: var(--text-muted);
     }
 
-    .empty-state-code {
+    .modal-score-value {
       font-family: var(--mono);
-      font-size: 12px;
-      color: var(--amber);
-      margin-top: 8px;
+      font-size: 26px;
+      font-weight: 700;
     }
 
-    canvas {
-      max-height: 260px;
+    .modal-score-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 4px;
+    }
+
+    .modal-explanation {
+      background: var(--surface-2);
+      border-left: 3px solid var(--accent, var(--amber));
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .modal-breakdown-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .modal-breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .modal-breakdown-row:last-child { border-bottom: none; }
+
+    .modal-breakdown-count {
+      font-family: var(--mono);
+      font-weight: 600;
     }
   </style>
 </head>
@@ -338,13 +383,12 @@
 
     <div class="panel">
       <div class="panel-title">
-        <span>Driver Table (RDS)</span>
+        <span>Driver Table (RDS) — click a row for details</span>
         <span id="drivers-updated" style="font-weight: 400; text-transform: none;"></span>
       </div>
       <table id="drivers-table">
         <thead>
           <tr>
-            <th>Rank</th>
             <th>Device ID</th>
             <th>Category</th>
             <th>Safety Score</th>
@@ -395,11 +439,107 @@
     </div>
   </main>
 
+  <!-- ============ EXPLANATION MODAL ============ -->
+  <div class="modal-overlay" id="driver-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Driver Detail</div>
+          <div class="modal-device" id="modal-device-title">—</div>
+        </div>
+        <button class="modal-close" id="modal-close-btn">✕</button>
+      </div>
+
+      <div class="modal-score-row">
+        <div class="modal-score-card">
+          <div class="modal-score-value" id="modal-safety-score" style="color: var(--cyan)">—</div>
+          <div class="modal-score-label">Safety Score</div>
+        </div>
+        <div class="modal-score-card">
+          <div class="modal-score-value" id="modal-fuel-score" style="color: var(--cyan)">—</div>
+          <div class="modal-score-label">Fuel Score</div>
+        </div>
+        <div class="modal-score-card">
+          <div class="modal-score-value" id="modal-rank">—</div>
+          <div class="modal-score-label">Fleet Rank</div>
+        </div>
+      </div>
+
+      <div class="modal-explanation" id="modal-explanation-text">—</div>
+
+      <div class="modal-breakdown-title">Event Breakdown</div>
+      <div id="modal-breakdown"></div>
+    </div>
+  </div>
+
   <script>
     Chart.defaults.color = '#8B93A7';
     Chart.defaults.font.family = 'IBM Plex Mono';
     Chart.defaults.font.size = 11;
     Chart.defaults.borderColor = '#262E40';
+
+    // Category → color, used consistently for badges, bars, and the doughnut
+    const CATEGORY_COLORS = {
+      'Eco Driver': '#22C55E',        // green
+      'Normal Driver': '#FFB020',     // amber
+      'Aggressive Driver': '#FF4D4F', // red
+    };
+    const CATEGORY_BADGE_CLASS = {
+      'Eco Driver': 'badge-eco',
+      'Normal Driver': 'badge-normal',
+      'Aggressive Driver': 'badge-aggressive',
+    };
+
+    let rdsDriversCache = [];
+
+    function buildExplanation(d) {
+      const rate = d.total_readings > 0
+        ? ((d.aggressive_event_count / d.total_readings) * 100).toFixed(3)
+        : '0';
+
+      let summary;
+      if (d.driver_category === 'Aggressive Driver') {
+        summary = `Device ${d.deviceID} is flagged as an <b>Aggressive Driver</b> because their combined rate of risky events (high RPM, rapid acceleration, hard braking) ranks them near the bottom of the fleet — ${d.aggressive_event_count} aggressive events across ${d.total_readings.toLocaleString()} readings (${rate}% event rate). Safety score reflects this driver's <i>relative</i> standing versus the rest of the fleet, not an absolute safety certification.`;
+      } else if (d.driver_category === 'Eco Driver') {
+        summary = `Device ${d.deviceID} is flagged as an <b>Eco Driver</b> because their event rate ranks near the top of the fleet — only ${d.aggressive_event_count} aggressive events across ${d.total_readings.toLocaleString()} readings (${rate}% event rate).`;
+      } else {
+        summary = `Device ${d.deviceID} is a <b>Normal Driver</b> — a moderate event rate (${d.aggressive_event_count} events across ${d.total_readings.toLocaleString()} readings, ${rate}%) places them in the middle of the fleet's relative ranking.`;
+      }
+      return summary;
+    }
+
+    function openDriverModal(d) {
+      document.getElementById('modal-device-title').textContent = 'Device ' + d.deviceID;
+      document.getElementById('modal-safety-score').textContent = d.driver_safety_score.toFixed(1);
+      document.getElementById('modal-safety-score').style.color = CATEGORY_COLORS[d.driver_category] || 'var(--cyan)';
+      document.getElementById('modal-fuel-score').textContent = d.fuel_efficiency_score.toFixed(1);
+      document.getElementById('modal-rank').textContent = '#' + d.driver_rank;
+      document.getElementById('modal-explanation-text').innerHTML = buildExplanation(d);
+      document.querySelector('.modal-explanation').style.setProperty('--accent', CATEGORY_COLORS[d.driver_category] || 'var(--amber)');
+
+      const breakdown = document.getElementById('modal-breakdown');
+      breakdown.innerHTML = `
+        <div class="modal-breakdown-row"><span>High RPM events (rpm &gt; 2000)</span><span class="modal-breakdown-count">${d.high_rpm_count}</span></div>
+        <div class="modal-breakdown-row"><span>Rapid acceleration events</span><span class="modal-breakdown-count">${d.rapid_accel_count}</span></div>
+        <div class="modal-breakdown-row"><span>Hard braking events</span><span class="modal-breakdown-count">${d.hard_brake_count}</span></div>
+        <div class="modal-breakdown-row"><span>Total aggressive events (2+ signals)</span><span class="modal-breakdown-count">${d.aggressive_event_count}</span></div>
+        <div class="modal-breakdown-row"><span>Total trips</span><span class="modal-breakdown-count">${d.total_trips}</span></div>
+        <div class="modal-breakdown-row"><span>Total readings</span><span class="modal-breakdown-count">${d.total_readings.toLocaleString()}</span></div>
+        <div class="modal-breakdown-row"><span>Avg speed</span><span class="modal-breakdown-count">${d.avg_speed.toFixed(1)} km/h</span></div>
+        <div class="modal-breakdown-row"><span>Avg RPM</span><span class="modal-breakdown-count">${d.avg_rpm.toFixed(0)}</span></div>
+      `;
+
+      document.getElementById('driver-modal').classList.add('active');
+    }
+
+    document.getElementById('modal-close-btn').addEventListener('click', () => {
+      document.getElementById('driver-modal').classList.remove('active');
+    });
+    document.getElementById('driver-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'driver-modal') {
+        document.getElementById('driver-modal').classList.remove('active');
+      }
+    });
 
     // ---- RDS: DriverPerformance ----
     fetch('/api/drivers')
@@ -410,6 +550,8 @@
           document.getElementById('drivers-empty').style.display = 'block';
           return;
         }
+
+        rdsDriversCache = drivers;
 
         document.getElementById('kpi-driver-count').textContent = drivers.length;
         const avgSafety = drivers.reduce((s, d) => s + d.driver_safety_score, 0) / drivers.length;
@@ -422,17 +564,19 @@
 
         const tbody = document.getElementById('drivers-tbody');
         drivers.forEach(d => {
-          const badgeClass = d.driver_category === 'Eco Driver' ? 'badge-eco'
-            : d.driver_category === 'Normal Driver' ? 'badge-normal' : 'badge-aggressive';
-          tbody.innerHTML += `<tr>
-          <td class="rank-num">#${d.driver_rank}</td>
-          <td>${d.deviceID}</td>
-          <td><span class="badge ${badgeClass}">${d.driver_category}</span></td>
-          <td>${d.driver_safety_score.toFixed(1)}</td>
-          <td>${d.fuel_efficiency_score.toFixed(1)}</td>
-          <td>${d.total_trips}</td>
-          <td>${d.aggressive_event_count}</td>
-        </tr>`;
+          const badgeClass = CATEGORY_BADGE_CLASS[d.driver_category] || 'badge-normal';
+          const row = document.createElement('tr');
+          row.dataset.deviceId = d.deviceID;
+          row.innerHTML = `
+            <td>${d.deviceID}</td>
+            <td><span class="badge ${badgeClass}">${d.driver_category}</span></td>
+            <td>${d.driver_safety_score.toFixed(1)}</td>
+            <td>${d.fuel_efficiency_score.toFixed(1)}</td>
+            <td>${d.total_trips}</td>
+            <td>${d.aggressive_event_count}</td>
+          `;
+          row.addEventListener('click', () => openDriverModal(d));
+          tbody.appendChild(row);
         });
 
         new Chart(document.getElementById('chart-driver-scores'), {
@@ -441,32 +585,23 @@
             labels: drivers.map(d => 'Device ' + d.deviceID),
             datasets: [{
               data: drivers.map(d => d.driver_safety_score),
-              backgroundColor: drivers.map(d =>
-                d.driver_safety_score >= 80 ? '#35D0BA' : d.driver_safety_score >= 50 ? '#FFB020' : '#FF4D4F'
-              ),
+              backgroundColor: drivers.map(d => CATEGORY_COLORS[d.driver_category] || '#8B93A7'),
               borderRadius: 4,
             }]
           },
           options: {
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, max: 100 } }
+            scales: { y: { beginAtZero: true, max: 100 } },
+            onClick: (evt, elements) => {
+              if (elements.length > 0) openDriverModal(drivers[elements[0].index]);
+            }
           }
         });
 
-        // --- DYNAMIC DOUGHNUT CHART COLORS ---
         const categoryCounts = {};
         drivers.forEach(d => categoryCounts[d.driver_category] = (categoryCounts[d.driver_category] || 0) + 1);
-
         const labels = Object.keys(categoryCounts);
-
-        const colorMap = {
-          'Eco Driver': '#35D0BA',       // Cyan
-          'Normal Driver': '#FFB020',    // Amber
-          'Aggressive Driver': '#FF4D4F' // Red
-        };
-
-        // Map colors, with a fallback to gray if the category isn't found
-        const bgColors = labels.map(label => colorMap[label] || '#8B93A7');
+        const bgColors = labels.map(label => CATEGORY_COLORS[label] || '#8B93A7');
 
         new Chart(document.getElementById('chart-driver-categories'), {
           type: 'doughnut',
@@ -483,7 +618,7 @@
         });
       })
       .catch((err) => {
-        console.error(err); // Prints the exact error to your browser console!
+        console.error(err);
         document.getElementById('drivers-empty').style.display = 'block';
       });
 
@@ -501,8 +636,7 @@
 
         const tbody = document.getElementById('dynamo-tbody');
         drivers.forEach(d => {
-          const badgeClass = d.driver_category === 'Eco Driver' ? 'badge-eco'
-            : d.driver_category === 'Normal Driver' ? 'badge-normal' : 'badge-aggressive';
+          const badgeClass = CATEGORY_BADGE_CLASS[d.driver_category] || 'badge-normal';
           tbody.innerHTML += `<tr>
           <td>${d.deviceID}</td>
           <td><span class="badge ${badgeClass}">${d.driver_category}</span></td>
@@ -517,9 +651,7 @@
             labels: drivers.map(d => 'Device ' + d.deviceID),
             datasets: [{
               data: drivers.map(d => d.driver_safety_score),
-              backgroundColor: drivers.map(d =>
-                d.driver_safety_score >= 80 ? '#35D0BA' : d.driver_safety_score >= 50 ? '#FFB020' : '#FF4D4F'
-              ),
+              backgroundColor: drivers.map(d => CATEGORY_COLORS[d.driver_category] || '#8B93A7'),
               borderRadius: 4,
             }]
           },
